@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>WakeUp 画面モック</title>
+<style>
+  :root {
+    --paper: #FBF7F1;
+    --ink: #2A241D;
+    --muted: #857B6E;
+    --hairline: #E8DFD2;
+    --card: #FFFFFF;
+    --accent: #E8702A;
+    --accent-soft: #FBE8DA;
+    --chip-bg: #F3ECE1;
+
+    /* アプリ内固定パレット(端末内は朝の世界観で固定・テーマ非連動) */
+    --app-paper: #FFF8EF;
+    --app-ink: #33241C;
+    --app-muted: #A18B77;
+    --app-line: #F0E4D3;
+    --app-gold: #FFB938;
+    --app-orange: #FF8A4C;
+    --app-red: #E5484D;
+    --app-night: #151B2E;
+    --app-night2: #232C4A;
+    --sunrise: linear-gradient(160deg, #FFC64B 0%, #FF8A4C 48%, #F0566B 100%);
+
+    --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+    --font-round: "Hiragino Maru Gothic ProN", "HG Maru Gothic M-PRO", ui-rounded, "Hiragino Sans", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1D1915;
+      --ink: #F0E9DF;
+      --muted: #A79B8C;
+      --hairline: #373028;
+      --card: #262119;
+      --accent: #F58A45;
+      --accent-soft: #3A2A1D;
+      --chip-bg: #2E2820;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1D1915;
+    --ink: #F0E9DF;
+    --muted: #A79B8C;
+    --hairline: #373028;
+    --card: #262119;
+    --accent: #F58A45;
+    --accent-soft: #3A2A1D;
+    --chip-bg: #2E2820;
+  }
+  :root[data-theme="light"] {
+    --paper: #FBF7F1;
+    --ink: #2A241D;
+    --muted: #857B6E;
+    --hairline: #E8DFD2;
+    --card: #FFFFFF;
+    --accent: #E8702A;
+    --accent-soft: #FBE8DA;
+    --chip-bg: #F3ECE1;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.75;
+    font-feature-settings: "palt";
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  /* ---------- ページヘッダー ---------- */
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+  }
+  h1 {
+    font-family: var(--font-round);
+    font-size: clamp(30px, 5vw, 44px);
+    line-height: 1.25; margin: 8px 0 12px; text-wrap: balance;
+  }
+  .lede { color: var(--muted); max-width: 40em; margin: 0; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px;
+  }
+  .swatch {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    background: var(--card); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 5px 12px 5px 6px;
+  }
+  .swatch i { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+  .disclaimer {
+    margin-top: 18px; font-size: 12.5px; color: var(--muted);
+    border-left: 3px solid var(--accent); padding-left: 12px;
+  }
+
+  /* ---------- セクション ---------- */
+  .shot {
+    display: grid; grid-template-columns: 320px 1fr; gap: 44px;
+    align-items: start; margin-top: 84px;
+  }
+  @media (max-width: 760px) {
+    .shot { grid-template-columns: 1fr; gap: 24px; }
+    .shot .notes { order: 2; }
+  }
+  .step {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 12px; letter-spacing: 0.14em; font-weight: 700; color: var(--accent);
+  }
+  .step b {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent); color: #fff; display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+  }
+  .notes h2 {
+    font-family: var(--font-round);
+    font-size: 24px; margin: 10px 0 4px; line-height: 1.35; text-wrap: balance;
+  }
+  .notes .when { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+  .notes ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .notes li {
+    background: var(--card); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 12px 16px; font-size: 13.5px;
+  }
+  .notes li strong { display: block; font-size: 13.5px; }
+  .notes li span { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; }
+
+  /* ---------- スマホフレーム ---------- */
+  .phone {
+    width: 300px; border-radius: 48px; background: #121009;
+    padding: 10px; box-shadow: 0 24px 48px -20px rgba(35, 20, 5, 0.45);
+    margin: 0 auto;
+  }
+  .screen {
+    border-radius: 38px; overflow: hidden; height: 628px;
+    background: var(--app-paper); color: var(--app-ink);
+    position: relative; display: flex; flex-direction: column;
+    font-size: 13px; line-height: 1.55;
+  }
+  .statusbar {
+    height: 44px; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 22px;
+    font-size: 12px; font-weight: 700; position: relative;
+    font-variant-numeric: tabular-nums;
+  }
+  .notch {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 92px; height: 22px; border-radius: 999px; background: #121009;
+  }
+  .sig { letter-spacing: 1px; }
+
+  /* 汎用アプリ部品 */
+  .app-btn {
+    display: block; text-align: center; font-weight: 800; font-size: 14px;
+    padding: 13px 16px; border-radius: 999px;
+    background: var(--app-orange); color: #fff;
+  }
+  .app-btn.ghost { background: transparent; color: var(--app-muted); font-weight: 600; font-size: 12.5px; padding: 8px; }
+  .tabbar {
+    margin-top: auto; flex-shrink: 0; border-top: 1px solid var(--app-line);
+    display: flex; background: #FFFDF9;
+    padding: 8px 6px 18px;
+  }
+  .tabbar a {
+    flex: 1; text-align: center; font-size: 10px; color: var(--app-muted);
+    text-decoration: none; font-weight: 700; display: grid; gap: 3px; justify-items: center;
+  }
+  .tabbar a.on { color: var(--app-orange); }
+  .tabbar i {
+    width: 22px; height: 22px; border-radius: 7px; background: currentColor;
+    opacity: 0.9; display: block;
+  }
+  .tabbar i.cal { -webkit-mask: radial-gradient(circle at 30% 30%, transparent 3px, #000 3.5px); mask: radial-gradient(circle at 30% 30%, transparent 3px, #000 3.5px); }
+
+  /* ---------- 1. オンボーディング ---------- */
+  .ob { padding: 18px 24px 26px; display: flex; flex-direction: column; flex: 1; }
+  .dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 22px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--app-line); }
+  .dots i.on { background: var(--app-orange); width: 18px; border-radius: 999px; }
+  .ob h3 { font-family: var(--font-round); font-size: 21px; margin: 0 0 4px; line-height: 1.4; }
+  .ob .sub { color: var(--app-muted); font-size: 12px; margin: 0 0 18px; }
+  .picker {
+    position: relative; border-radius: 20px; background: #fff;
+    border: 1px solid var(--app-line); padding: 10px 0; text-align: center;
+    font-variant-numeric: tabular-nums; overflow: hidden;
+  }
+  .picker .row { padding: 9px 0; font-size: 22px; color: #CBB9A6; font-weight: 600; }
+  .picker .row.sel {
+    font-size: 34px; font-weight: 800; color: var(--app-ink);
+    background: linear-gradient(90deg, transparent, #FFF1DD 18%, #FFF1DD 82%, transparent);
+  }
+  .picker::before, .picker::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 34px; pointer-events: none;
+  }
+  .picker::before { top: 0; background: linear-gradient(#fff, transparent); }
+  .picker::after { bottom: 0; background: linear-gradient(transparent, #fff); }
+  .pledge {
+    margin: 16px 2px auto; font-size: 12px; color: var(--app-muted);
+    background: var(--app-paper); border: 1px dashed #E4CFB4; border-radius: 12px;
+    padding: 10px 12px; text-align: center;
+  }
+  .pledge b { color: var(--app-orange); }
+
+  /* ---------- 2. 前日確認 ---------- */
+  .dim { background: var(--app-night); }
+  .dim .statusbar { color: #E8ECFA; }
+  .push {
+    margin: 6px 12px 0; background: rgba(255,255,255,0.96); border-radius: 18px;
+    padding: 11px 14px; color: #2A241D; box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    font-size: 12px;
+  }
+  .push .from { display: flex; align-items: center; gap: 7px; font-size: 10.5px; color: #8A8177; margin-bottom: 4px; }
+  .push .from i {
+    width: 16px; height: 16px; border-radius: 5px; background: var(--sunrise); display: inline-block;
+  }
+  .push b { font-size: 12.5px; }
+  .push .acts { display: flex; gap: 6px; margin-top: 9px; }
+  .push .acts span {
+    flex: 1; text-align: center; font-size: 10.5px; font-weight: 700;
+    border: 1px solid #E8DFD2; border-radius: 9px; padding: 6px 2px; color: #5C5348;
+  }
+  .push .acts span.main { background: #FFF1DD; border-color: #F5C88E; color: #B05A18; }
+  .sheet {
+    margin-top: auto; background: var(--app-paper); border-radius: 26px 26px 38px 38px;
+    padding: 20px 22px 26px;
+  }
+  .sheet .grab { width: 40px; height: 4px; border-radius: 99px; background: var(--app-line); margin: 0 auto 14px; }
+  .sheet h3 { font-family: var(--font-round); font-size: 17px; margin: 0 0 2px; }
+  .sheet .sub { font-size: 11.5px; color: var(--app-muted); margin: 0 0 14px; }
+  .bigtime {
+    text-align: center; font-size: 52px; font-weight: 800; letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums; line-height: 1.1; margin-bottom: 8px;
+  }
+  .timechips { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .timechips span {
+    font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 999px;
+    border: 1px solid var(--app-line); color: var(--app-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .timechips span.sel { background: var(--app-orange); border-color: var(--app-orange); color: #fff; }
+  .rest-link { text-align: center; font-size: 12px; color: var(--app-muted); margin-top: 10px; }
+  .rest-link b { color: #7A6FB8; }
+
+  /* ---------- 3. カメラ ---------- */
+  .cam { background: var(--app-night); color: #F3F5FC; }
+  .cam .statusbar { color: #F3F5FC; }
+  .finder {
+    position: absolute; inset: 44px 0 0 0;
+    background:
+      radial-gradient(120% 90% at 82% 8%, rgba(255,198,75,0.35), transparent 52%),
+      radial-gradient(90% 70% at 18% 100%, rgba(35,44,74,0.9), transparent 70%),
+      linear-gradient(200deg, #2B3355 0%, #151B2E 62%);
+  }
+  .finder .window {
+    position: absolute; top: 64px; right: 30px; width: 88px; height: 120px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #FFD98A 0%, #FFAB63 60%, #E97A63 100%);
+    opacity: 0.9;
+    box-shadow: 0 0 44px rgba(255, 190, 100, 0.45);
+  }
+  .finder .window::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 46%, rgba(21,27,46,0.55) 48%, transparent 52%),
+                linear-gradient(0deg, transparent 46%, rgba(21,27,46,0.55) 48%, transparent 52%);
+  }
+  .countpill {
+    position: relative; z-index: 2; margin: 10px auto 0; width: max-content;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(229,72,77,0.16); border: 1.5px solid #E5484D;
+    color: #FF8589; border-radius: 999px; padding: 7px 16px;
+    font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .countpill i {
+    width: 10px; height: 10px; border-radius: 50%; background: #E5484D; display: inline-block;
+  }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  @media (prefers-reduced-motion: reduce) {
+    .countpill, .todaycell::after { animation: none !important; }
+  }
+  .cam-hint {
+    position: relative; z-index: 2; text-align: center; margin-top: 8px;
+    font-size: 11.5px; color: rgba(243,245,252,0.72);
+  }
+  .cam-bottom {
+    margin-top: auto; position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 44px 30px;
+  }
+  .shutter {
+    width: 74px; height: 74px; border-radius: 50%;
+    border: 5px solid #fff; background: rgba(255,255,255,0.28);
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.12);
+  }
+  .cam-side {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.14); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .deadlinebar {
+    position: relative; z-index: 2; height: 4px; margin: 0 26px 12px;
+    background: rgba(255,255,255,0.16); border-radius: 99px; overflow: hidden;
+  }
+  .deadlinebar i { display: block; height: 100%; width: 15%; background: #E5484D; border-radius: 99px; }
+
+  /* ---------- 4. 達成演出 ---------- */
+  .celebrate { background: var(--sunrise); color: #43230F; }
+  .celebrate .statusbar { color: rgba(67,35,15,0.85); }
+  .rays {
+    position: absolute; inset: -40%;
+    background: conic-gradient(from 0deg,
+      rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.28) 12deg, rgba(255,255,255,0.0) 24deg,
+      rgba(255,255,255,0.0) 44deg, rgba(255,255,255,0.28) 56deg, rgba(255,255,255,0.0) 68deg,
+      rgba(255,255,255,0.0) 88deg, rgba(255,255,255,0.28) 100deg, rgba(255,255,255,0.0) 112deg,
+      rgba(255,255,255,0.0) 134deg, rgba(255,255,255,0.28) 146deg, rgba(255,255,255,0.0) 158deg,
+      rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.28) 192deg, rgba(255,255,255,0.0) 204deg,
+      rgba(255,255,255,0.0) 224deg, rgba(255,255,255,0.28) 236deg, rgba(255,255,255,0.0) 248deg,
+      rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.28) 282deg, rgba(255,255,255,0.0) 294deg,
+      rgba(255,255,255,0.0) 314deg, rgba(255,255,255,0.28) 326deg, rgba(255,255,255,0.0) 338deg);
+    opacity: 0.5; pointer-events: none;
+  }
+  .celebrate .inner {
+    position: relative; z-index: 2; padding: 4px 24px 24px; text-align: center;
+    display: flex; flex-direction: column; flex: 1;
+  }
+  .streak-n { font-size: 15px; font-weight: 800; letter-spacing: 0.08em; }
+  .streak-big {
+    font-family: var(--font-round); font-size: 58px; font-weight: 800; line-height: 1.05;
+    margin: 2px 0 0; font-variant-numeric: tabular-nums;
+  }
+  .streak-big small { font-size: 22px; font-weight: 800; }
+  .poster {
+    margin: 14px 4px 0; background: rgba(255,252,246,0.95); border-radius: 22px;
+    padding: 18px 14px 14px; box-shadow: 0 18px 34px rgba(150,60,20,0.28);
+  }
+  .poster .charac { margin: 0 auto; width: 118px; height: 128px; }
+  .poster .title {
+    font-family: var(--font-round); font-size: 20px; font-weight: 800; margin-top: 6px;
+  }
+  .poster .copy { font-size: 12px; color: #8A6A50; margin-top: 2px; }
+  .poster .meta {
+    display: flex; justify-content: center; gap: 8px; margin-top: 10px; font-size: 10.5px;
+  }
+  .poster .meta span {
+    background: #FFF1DD; color: #B05A18; border-radius: 999px; padding: 3px 10px; font-weight: 700;
+  }
+  .celebrate .cta { margin-top: auto; display: grid; gap: 8px; }
+  .celebrate .app-btn { background: #43230F; }
+  .celebrate .app-btn.ghost { color: rgba(67,35,15,0.7); }
+
+  /* ---------- 5. ホーム(カレンダー) ---------- */
+  .home-head { padding: 6px 20px 12px; }
+  .stats { display: flex; gap: 8px; }
+  .stat {
+    flex: 1; background: #fff; border: 1px solid var(--app-line); border-radius: 14px;
+    padding: 8px 6px 7px; text-align: center;
+  }
+  .stat b { display: block; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .stat.fire b { color: var(--app-orange); }
+  .stat span { font-size: 9.5px; color: var(--app-muted); font-weight: 700; }
+  .month-label { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 22px 6px; }
+  .month-label b { font-family: var(--font-round); font-size: 16px; }
+  .month-label span { font-size: 11px; color: var(--app-muted); }
+  .cal { padding: 0 16px; }
+  .cal .dow, .cal .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal .dow { font-size: 9px; color: var(--app-muted); text-align: center; margin-bottom: 5px; font-weight: 700; }
+  .cal .week { margin-bottom: 5px; }
+  .cell {
+    aspect-ratio: 1; border-radius: 10px; background: #FFFDF9; border: 1px solid var(--app-line);
+    position: relative; font-size: 9px; color: var(--app-muted);
+    display: flex; align-items: flex-start; justify-content: flex-end; padding: 3px 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cell.blank { background: transparent; border-color: transparent; }
+  .cell.photo { border: none; color: rgba(255,255,255,0.95); font-weight: 700; overflow: hidden; }
+  .cell.photo::before { content: ""; position: absolute; inset: 0; }
+  .cell.p1::before { background: linear-gradient(160deg, #FFD98A, #E97A63); }
+  .cell.p2::before { background: linear-gradient(200deg, #9BB8D8, #5E7BA6); }
+  .cell.p3::before { background: linear-gradient(180deg, #F4E3C8, #C99C6E); }
+  .cell.p4::before { background: linear-gradient(150deg, #FFC0A0, #C96A54); }
+  .cell.p5::before { background: linear-gradient(190deg, #BFD8C2, #6E9C7C); }
+  .cell.photo span { position: relative; }
+  .cell.missed { background: #EFE8DC; border-style: dashed; }
+  .cell.rest { background: #EFEAF7; border-color: #DED4F0; color: #7A6FB8; align-items: center; justify-content: center; font-size: 13px; }
+  .cell.today { box-shadow: 0 0 0 2px var(--app-orange); }
+  .cell.today::after {
+    content: ""; position: absolute; inset: -2px; border-radius: 12px;
+    box-shadow: 0 0 0 4px rgba(255,138,76,0.25);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .tonight {
+    margin: 10px 16px 12px; background: #fff; border: 1px solid var(--app-line);
+    border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+  }
+  .tonight b { font-variant-numeric: tabular-nums; }
+  .tonight .edit { margin-left: auto; color: var(--app-orange); font-weight: 800; font-size: 11px; }
+
+  /* ---------- 6. フィード ---------- */
+  .feed-head { padding: 2px 20px 8px; display: flex; align-items: baseline; justify-content: space-between; }
+  .feed-head b { font-family: var(--font-round); font-size: 18px; }
+  .feed-head span { font-size: 10.5px; color: var(--app-muted); }
+  .feed-scroll { overflow: hidden; padding: 0 14px; display: grid; gap: 10px; }
+  .post { background: #fff; border: 1px solid var(--app-line); border-radius: 18px; overflow: hidden; }
+  .post .head { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; }
+  .av1 { background: linear-gradient(140deg, #FFC64B, #F0566B); }
+  .av2 { background: linear-gradient(140deg, #9BB8D8, #5E7BA6); }
+  .post .head b { font-size: 12px; }
+  .post .head .time {
+    margin-left: auto; font-size: 9.5px; background: #FFF1DD; color: #B05A18;
+    padding: 3px 8px; border-radius: 999px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .post .img { height: 128px; position: relative; color: rgba(255,255,255,0.9); }
+  .post .img.morning { background: linear-gradient(165deg, #FFD98A 0%, #E97A63 70%, #B85B5B 100%); }
+  .post .img.desk { background: linear-gradient(200deg, #C9D8E8 0%, #7B93B0 80%); }
+  .post .img .streakchip {
+    position: absolute; left: 10px; bottom: 8px; font-size: 10px; font-weight: 800;
+    background: rgba(20,14,8,0.5); border-radius: 999px; padding: 3px 9px;
+  }
+  .reactions { display: flex; gap: 6px; padding: 8px 12px 10px; font-size: 11px; }
+  .reactions span {
+    background: var(--app-paper); border: 1px solid var(--app-line);
+    border-radius: 999px; padding: 3px 9px; font-variant-numeric: tabular-nums;
+  }
+  .reactions span.me { background: #FFF1DD; border-color: #F5C88E; }
+  .allup {
+    text-align: center; font-size: 11px; color: var(--app-muted); padding: 4px 0 8px;
+  }
+
+  /* ---------- 7. プロフィール ---------- */
+  .prof-top { text-align: center; padding: 4px 20px 0; }
+  .prof-top .charac { width: 96px; height: 104px; margin: 0 auto; }
+  .prof-top h3 { font-family: var(--font-round); font-size: 17px; margin: 4px 0 2px; }
+  .title-chip {
+    display: inline-block; font-size: 11px; font-weight: 800; color: #B05A18;
+    background: #FFF1DD; border-radius: 999px; padding: 4px 12px;
+  }
+  .lv { margin: 12px 26px 0; font-size: 10.5px; color: var(--app-muted); }
+  .lv .bar { height: 7px; background: #F0E4D3; border-radius: 99px; margin-top: 4px; overflow: hidden; }
+  .lv .bar i { display: block; height: 100%; width: 62%; border-radius: 99px; background: var(--sunrise); }
+  .lv .row { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .pstats { display: flex; gap: 8px; margin: 12px 16px 0; }
+  .zukan { margin: 14px 16px 0; }
+  .zukan h4 { font-size: 11px; color: var(--app-muted); margin: 0 0 7px; font-weight: 700; }
+  .forms { display: flex; gap: 7px; }
+  .form {
+    flex: 1; text-align: center; font-size: 8.5px; color: var(--app-muted); display: grid; gap: 3px;
+  }
+  .form i {
+    aspect-ratio: 1; border-radius: 50%; display: block;
+    border: 2px solid var(--app-line); background: #fff; position: relative; overflow: hidden;
+  }
+  .form i::after {
+    content: ""; position: absolute; left: 50%; bottom: -22%; transform: translateX(-50%);
+    width: 66%; height: 62%; border-radius: 50% 50% 0 0; background: var(--c, #D8D0C4);
+  }
+  .form i::before {
+    content: ""; position: absolute; left: 50%; top: 16%; transform: translateX(-50%);
+    width: 46%; height: 46%; border-radius: 50%; background: #F2C9A4; z-index: 1;
+  }
+  .form.cur i { border-color: var(--app-orange); box-shadow: 0 0 0 3px rgba(255,138,76,0.22); }
+  .form.cur { color: var(--app-orange); font-weight: 800; }
+  .form.lock i { background: #EFE8DC; }
+  .form.lock i::before, .form.lock i::after { background: #D3C8B8; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 12px 16px 12px; }
+  .grid3 i { aspect-ratio: 1; border-radius: 10px; display: block; }
+
+  /* ---------- 8. リセット翌朝 ---------- */
+  .reset-screen {
+    background: linear-gradient(190deg, #FDF3E3 0%, #FFF8EF 55%);
+  }
+  .reset-inner { padding: 12px 24px 26px; display: flex; flex-direction: column; flex: 1; text-align: center; }
+  .reset-inner .charac { width: 128px; height: 138px; margin: 8px auto 0; }
+  .futon {
+    width: 168px; height: 26px; margin: -10px auto 0; border-radius: 14px;
+    background: #EDE2F2; border: 1px solid #DECDE8; position: relative; z-index: -1;
+  }
+  .reset-inner h3 { font-family: var(--font-round); font-size: 19px; margin: 18px 0 4px; line-height: 1.5; }
+  .reset-inner .sub { font-size: 12px; color: var(--app-muted); margin: 0; }
+  .keepline {
+    margin: 16px 0; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; font-size: 10.5px;
+  }
+  .keepline span {
+    background: #fff; border: 1px solid var(--app-line); color: var(--app-muted);
+    border-radius: 999px; padding: 4px 10px; font-weight: 700;
+  }
+  .reset-inner .cta { margin-top: auto; display: grid; gap: 6px; }
+  .bonus-note { font-size: 11px; color: #B05A18; font-weight: 700; }
+
+  /* ---------- キャラクター SVG 共通 ---------- */
+  .charac svg { width: 100%; height: 100%; display: block; }
+
+  footer.pagefoot {
+    margin-top: 96px; border-top: 1px solid var(--hairline); padding-top: 20px;
+    font-size: 12.5px; color: var(--muted);
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">WakeUp — Screen Mocks v1</p>
+    <h1>朝を撮る、が習慣になるまでの8画面</h1>
+    <p class="lede">設計書(docs/wakeup-product-design.md)にもとづく主要画面のモックです。初回設定から、前夜の確認、朝3分の勝負、達成の演出、そして途切れた翌朝まで——体験の時系列順に並べています。</p>
+    <div class="legend">
+      <span class="swatch"><i style="background: linear-gradient(140deg,#FFC64B,#FF8A4C,#F0566B)"></i>サンライズ(演出・達成)</span>
+      <span class="swatch"><i style="background:#FFF8EF; border:1px solid #E8DFD2"></i>朝の紙色(基本地)</span>
+      <span class="swatch"><i style="background:#151B2E"></i>夜ネイビー(カメラ・前夜)</span>
+      <span class="swatch"><i style="background:#E5484D"></i>締切レッド(残り30秒)</span>
+      <span class="swatch"><i style="background:#7A6FB8"></i>おやすみ(スキップ)</span>
+    </div>
+    <p class="disclaimer">キャラクターは配置・サイズ検討用の簡易プレースホルダです。本制作では「悪口診断」風のアニメ調デフォルメ(太い輪郭線・鮮やかな配色・性格の出た表情)で同一人物の成長段階として描き起こします。写真セルのグラデーションも実写プレビューの代用です。</p>
+  </header>
+
+  <!-- 1. オンボーディング -->
+  <section class="shot">
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>22:14</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="ob">
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+        <h3>明日は何時に<br>起きますか？</h3>
+        <p class="sub">あとから毎晩かんたんに変えられます</p>
+        <div class="picker">
+          <div class="row">6:45</div>
+          <div class="row sel">7:00</div>
+          <div class="row">7:15</div>
+        </div>
+        <p class="pledge">明日の <b>7:00</b>、最初の一歩を見届けます。<br>通知から <b>3分以内</b> に写真を撮れば達成です。</p>
+        <a class="app-btn">7:00 に挑戦する</a>
+        <a class="app-btn ghost">くわしいルールを見る</a>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>1</b>オンボーディング</p>
+      <h2>起床時刻の初期設定</h2>
+      <p class="when">初回登録直後(SMS認証 → プロフィール → ここ)</p>
+      <ul>
+        <li><strong>ドラムピッカーは5分きざみ</strong><span>寝起きの操作を想定し、選択肢を粗くして迷いをなくす。</span></li>
+        <li><strong>宣言文でコミットメントを作る</strong><span>「7:00、最初の一歩を見届けます」— 設定した瞬間に約束が始まる文言。猶予3分のルールもここで先に伝える。</span></li>
+        <li><strong>次のステップで通知許可</strong><span>「通知が目覚ましの代わりです」と目的を説明してからOSダイアログを出す(許諾率対策)。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. 前日確認 -->
+  <section class="shot">
+    <div class="phone"><div class="screen dim">
+      <div class="statusbar"><span>21:00</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="push">
+        <div class="from"><i></i>WakeUp・いま</div>
+        <b>明日は何時に起きますか？</b>
+        <div>いまは 7:00 に設定されています</div>
+        <div class="acts"><span class="main">👍 このまま</span><span>時間を変える</span><span>おやすみ</span></div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3>明日の起床時刻</h3>
+        <p class="sub">7月9日(木)・返事がなければ 7:00 のままにします</p>
+        <div class="bigtime">7:00</div>
+        <div class="timechips"><span>6:30</span><span class="sel">7:00</span><span>7:30</span><span>8:00</span></div>
+        <a class="app-btn">この時間で確定</a>
+        <p class="rest-link">明日はおやすみにする 💤 <b>(あと1回 / 2週間)</b></p>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>2</b>前夜 21:00</p>
+      <h2>前日確認通知とワンタップ確定</h2>
+      <p class="when">毎晩、ユーザーが設定した時刻(既定21:00)に配信</p>
+      <ul>
+        <li><strong>通知の3択で完結できる</strong><span>「👍このまま/時間を変える/おやすみ」。「このまま」ならアプリを開かず確定。</span></li>
+        <li><strong>「時間を変える」はこのシートに直行</strong><span>チップは前後30分きざみ+ピッカー起動。当日変更は起床1時間前まで。</span></li>
+        <li><strong>未応答でも挑戦は消えない</strong><span>返事がなければ前回設定を自動適用(シート内に明記)。</span></li>
+        <li><strong>おやすみは2週間に1回</strong><span>残り回数を常に表示。使うとストリークは「途切れず・進まず」。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3. カメラ -->
+  <section class="shot">
+    <div class="phone"><div class="screen cam">
+      <div class="statusbar"><span>7:02</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="finder"><div class="window"></div></div>
+      <div class="countpill"><i></i>0:27</div>
+      <p class="cam-hint">起きた証拠をパシャリ。フィルタも編集もなし。</p>
+      <div class="cam-bottom">
+        <div class="cam-side">⚡︎</div>
+        <div class="shutter"></div>
+        <div class="cam-side">⟳</div>
+      </div>
+      <div class="deadlinebar"><i></i></div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>3</b>朝 7:00 — 勝負の3分</p>
+      <h2>カメラ(残り30秒の状態)</h2>
+      <p class="when">起床通知タップで直行。リマインドは+1分/+2分</p>
+      <ul>
+        <li><strong>カウントダウンが唯一の主役</strong><span>白 → 残り1分で琥珀 → <b>残り30秒で赤+脈動+1秒ごとのハプティクス</b>。ラスト10秒は数字が拡大。</span></li>
+        <li><strong>ギャラリー導線は存在しない</strong><span>UIにボタン自体を置かない。撮る・切替・フラッシュのみの3操作。</span></li>
+        <li><strong>撮影後は2択だけ</strong><span>「撮り直す/これで起床!」。投稿と同時に達成が確定し、演出(次画面)へ。</span></li>
+        <li><strong>締切バーを最下部に常設</strong><span>残量が一目でわかる。締切超過後の投稿は「遅刻達成」として記録は残る。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. 達成演出 -->
+  <section class="shot">
+    <div class="phone"><div class="screen celebrate">
+      <div class="rays"></div>
+      <div class="statusbar"><span>7:03</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="inner">
+        <div class="streak-n">🔥 連続達成</div>
+        <div class="streak-big">7<small> 日</small></div>
+        <div class="poster">
+          <div class="charac">
+            <svg viewBox="0 0 120 140" role="img" aria-label="スーツ姿で頷く主人公">
+              <ellipse cx="60" cy="132" rx="34" ry="6" fill="#E9D8C3"/>
+              <rect x="38" y="70" width="44" height="52" rx="16" fill="#3D4460"/>
+              <rect x="54" y="72" width="12" height="34" rx="6" fill="#FFF6EA"/>
+              <path d="M57 74 L63 74 L60 86 Z" fill="#E8702A"/>
+              <rect x="30" y="76" width="12" height="34" rx="6" fill="#3D4460" transform="rotate(12 36 93)"/>
+              <rect x="78" y="76" width="12" height="34" rx="6" fill="#3D4460" transform="rotate(-12 84 93)"/>
+              <circle cx="60" cy="42" r="26" fill="#F6CFA6"/>
+              <path d="M34 38 Q38 16 60 16 Q82 16 86 38 Q74 30 60 31 Q46 30 34 38 Z" fill="#4A3628"/>
+              <path d="M84 34 q6 2 4 9" stroke="#4A3628" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <rect x="46" y="42" width="10" height="4" rx="2" fill="#2A241D"/>
+              <rect x="64" y="42" width="10" height="4" rx="2" fill="#2A241D"/>
+              <path d="M54 54 q6 4 12 0" stroke="#B4633C" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="title">「一週間の証人」</div>
+          <div class="copy">一週間、ぜんぶ見届けた。えらいのはあなた。</div>
+          <div class="meta"><span>7日連続</span><span>7/8 7:02起床</span><span>+30pt</span></div>
+        </div>
+        <div class="cta">
+          <a class="app-btn">友達に伝える</a>
+          <a class="app-btn ghost">そっと閉じる</a>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>4</b>投稿直後</p>
+      <h2>ストリーク達成演出(7日・進化)</h2>
+      <p class="when">投稿完了と同時に全画面表示。タップでスキップ可</p>
+      <ul>
+        <li><strong>進化アニメーション → ポスター風カード</strong><span>朝日が昇る全画面演出のあと、旧い姿が光に包まれて新しい姿へ変身。変身後の1枚絵がそのまま達成カードになる。</span></li>
+        <li><strong>キャラは飄々、文言はちゃんと褒める</strong><span>「一週間、ぜんぶ見届けた。えらいのはあなた。」— 毒はユーザーに向けない。</span></li>
+        <li><strong>共有は強制しない</strong><span>「友達に伝える/そっと閉じる」の2択。ソロ利用者を一級市民として扱う。</span></li>
+        <li><strong>非マイルストーン日も無音にしない</strong><span>毎日、🔥カウントアップ+一言称賛+ポイント加算の軽い演出を挟む。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. ホーム(カレンダー) -->
+  <section class="shot">
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>7:04</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="home-head">
+        <div class="stats">
+          <div class="stat fire"><b>🔥 7日</b><span>連続達成</span></div>
+          <div class="stat"><b>21日</b><span>最長記録</span></div>
+          <div class="stat"><b>86%</b><span>今月の達成率</span></div>
+        </div>
+      </div>
+      <div class="month-label"><b>2026年7月</b><span>‹ 6月　8月 ›</span></div>
+      <div class="cal">
+        <div class="dow"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div>
+        <div class="week">
+          <div class="cell blank"></div><div class="cell blank"></div>
+          <div class="cell missed"><span>1</span></div>
+          <div class="cell photo p1"><span>2</span></div>
+          <div class="cell photo p2"><span>3</span></div>
+          <div class="cell photo p3"><span>4</span></div>
+          <div class="cell photo p4"><span>5</span></div>
+        </div>
+        <div class="week">
+          <div class="cell rest">💤</div>
+          <div class="cell photo p5"><span>7</span></div>
+          <div class="cell photo p1 today"><span>8</span></div>
+          <div class="cell"><span>9</span></div>
+          <div class="cell"><span>10</span></div>
+          <div class="cell"><span>11</span></div>
+          <div class="cell"><span>12</span></div>
+        </div>
+        <div class="week">
+          <div class="cell"><span>13</span></div><div class="cell"><span>14</span></div>
+          <div class="cell"><span>15</span></div><div class="cell"><span>16</span></div>
+          <div class="cell"><span>17</span></div><div class="cell"><span>18</span></div>
+          <div class="cell"><span>19</span></div>
+        </div>
+        <div class="week">
+          <div class="cell"><span>20</span></div><div class="cell"><span>21</span></div>
+          <div class="cell"><span>22</span></div><div class="cell"><span>23</span></div>
+          <div class="cell"><span>24</span></div><div class="cell"><span>25</span></div>
+          <div class="cell"><span>26</span></div>
+        </div>
+      </div>
+      <div class="tonight">🌙 明日は <b>7:00</b> 起床<span class="edit">変更 ✏️</span></div>
+      <div class="tabbar">
+        <a class="on"><i class="cal"></i>ホーム</a>
+        <a><i></i>フィード</a>
+        <a><i></i>プロフィール</a>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>5</b>起動直後の画面</p>
+      <h2>ホーム = カレンダー</h2>
+      <p class="when">アプリの主役は「自分の記録」。フィードは従</p>
+      <ul>
+        <li><strong>セルの状態が5種で一目瞭然</strong><span>達成=写真サムネイル/未達成=グレー破線/おやすみ=💤(紫)/今日=橙リング脈動/未来=空欄。</span></li>
+        <li><strong>3スタットを常設ヘッダーに</strong><span>🔥連続・最長記録・今月の達成率。数字の伸びが自己規律の可視化。</span></li>
+        <li><strong>猶予時間中はヘッダーがCTAに変化</strong><span>「⏰ 残り 2:14 — 今すぐ撮る」バナー(残り30秒で赤に同期)。タップでカメラ直行。</span></li>
+        <li><strong>下部に今夜の予定</strong><span>「明日は7:00起床 ✏️」— 前夜を待たずいつでも変更シートへ。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. フィード -->
+  <section class="shot">
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>7:41</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="feed-head"><b>今日の朝</b><span>友達 4人</span></div>
+      <div class="feed-scroll">
+        <div class="post">
+          <div class="head"><span class="avatar av1"></span><b>ミナ</b><span class="time">7:02 ⏰7:00</span></div>
+          <div class="img morning"><span class="streakchip">🔥 14日</span></div>
+          <div class="reactions"><span class="me">🔥 3</span><span>☀️ 1</span><span>👏 2</span><span>＋</span></div>
+        </div>
+        <div class="post">
+          <div class="head"><span class="avatar av2"></span><b>ケイ</b><span class="time">6:31 ⏰6:30</span></div>
+          <div class="img desk"><span class="streakchip">🔥 3日</span></div>
+          <div class="reactions"><span>🔥 1</span><span>💪 1</span><span>＋</span></div>
+        </div>
+        <div class="allup">☀️ 今日は全員起きました</div>
+      </div>
+      <div class="tabbar">
+        <a><i class="cal"></i>ホーム</a>
+        <a class="on"><i></i>フィード</a>
+        <a><i></i>プロフィール</a>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>6</b>投稿のあとで</p>
+      <h2>フィード(友達のみ)</h2>
+      <p class="when">当日の投稿だけが並ぶ。公開フィードは存在しない</p>
+      <ul>
+        <li><strong>自分が投稿するまでは全カードにブラー</strong><span>「投稿すると友達の朝が見えます」オーバーレイ。見る専を作らない(スキップ宣言者は除く)。</span></li>
+        <li><strong>起床時刻チップが証明になる</strong><span>「7:02 ⏰7:00」= 設定と実績をセットで表示。ストリーク🔥も写真上に。</span></li>
+        <li><strong>リアクションは称賛系6種のみ</strong><span>🔥☀️👏🎉💪😊。タップ1回=🔥、長押しでピッカー。ネガティブ絵文字は選択肢に置かない。</span></li>
+        <li><strong>全員達成でフッター演出</strong><span>「☀️ 今日は全員起きました」— 小さな連帯感の報酬。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. プロフィール -->
+  <section class="shot">
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>7:42</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="prof-top">
+        <div class="charac">
+          <svg viewBox="0 0 120 140" role="img" aria-label="現在の姿(一週間の証人)">
+            <ellipse cx="60" cy="132" rx="30" ry="5" fill="#F0E4D3"/>
+            <rect x="40" y="72" width="40" height="48" rx="15" fill="#3D4460"/>
+            <rect x="55" y="74" width="10" height="30" rx="5" fill="#FFF6EA"/>
+            <circle cx="60" cy="46" r="24" fill="#F6CFA6"/>
+            <path d="M36 42 Q40 22 60 22 Q80 22 84 42 Q72 34 60 35 Q48 34 36 42 Z" fill="#4A3628"/>
+            <rect x="47" y="46" width="9" height="4" rx="2" fill="#2A241D"/>
+            <rect x="64" y="46" width="9" height="4" rx="2" fill="#2A241D"/>
+            <path d="M55 57 q5 3 10 0" stroke="#B4633C" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>ユウキ</h3>
+        <span class="title-chip">一週間の証人</span>
+      </div>
+      <div class="lv">
+        <div class="row"><span>Lv.12</span><span>1,840 / 2,200pt</span></div>
+        <div class="bar"><i></i></div>
+      </div>
+      <div class="pstats">
+        <div class="stat"><b>58日</b><span>累計達成</span></div>
+        <div class="stat"><b>21日</b><span>最長記録</span></div>
+        <div class="stat fire"><b>🔥 7日</b><span>いまの連続</span></div>
+      </div>
+      <div class="zukan">
+        <h4>あゆみ図鑑(歴代の姿)</h4>
+        <div class="forms">
+          <div class="form" style="--c:#8FB5D6"><i></i>3日</div>
+          <div class="form" style="--c:#F0946B"><i></i>5日</div>
+          <div class="form cur" style="--c:#3D4460"><i></i>7日</div>
+          <div class="form" style="--c:#B98A5F"><i></i>14日</div>
+          <div class="form" style="--c:#6E9C7C"><i></i>21日</div>
+          <div class="form lock"><i></i>30日</div>
+        </div>
+      </div>
+      <div class="grid3">
+        <i style="background:linear-gradient(160deg,#FFD98A,#E97A63)"></i>
+        <i style="background:linear-gradient(200deg,#9BB8D8,#5E7BA6)"></i>
+        <i style="background:linear-gradient(180deg,#F4E3C8,#C99C6E)"></i>
+      </div>
+      <div class="tabbar">
+        <a><i class="cal"></i>ホーム</a>
+        <a><i></i>フィード</a>
+        <a class="on"><i></i>プロフィール</a>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>7</b>じぶんの現在地</p>
+      <h2>プロフィール</h2>
+      <p class="when">称号はストリーク由来のみ。レベルは数字とゲージだけ</p>
+      <ul>
+        <li><strong>現在の姿がアイコンそのもの</strong><span>「いま継続している自分」の鏡。称号チップは現在のストリーク段階を表示。</span></li>
+        <li><strong>あゆみ図鑑は永久保存</strong><span>一度到達した姿は途切れても残る(この例では過去に21日まで到達済み・現在は7日を再登坂中)。ロック中はシルエット。</span></li>
+        <li><strong>レベルに称号は付けない</strong><span>Lv.と累計ポイントのゲージのみ。称号=継続の証、という意味を薄めない。</span></li>
+        <li><strong>過去投稿は公開範囲つき</strong><span>「自分のみ」投稿もここには表示。友達から見える範囲は本人設定に従う。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8. リセット翌朝 -->
+  <section class="shot">
+    <div class="phone"><div class="screen reset-screen">
+      <div class="statusbar"><span>8:12</span><div class="notch"></div><span class="sig">●●● ⌁</span></div>
+      <div class="reset-inner">
+        <div class="charac">
+          <svg viewBox="0 0 120 140" role="img" aria-label="パジャマ姿でストレッチする主人公">
+            <rect x="38" y="74" width="44" height="50" rx="16" fill="#BFD4EC"/>
+            <path d="M44 78 h4 v44 h-4 z M56 76 h4 v48 h-4 z M68 76 h4 v48 h-4 z M78 78 h4 v44 h-4 z" fill="#9DB9DC"/>
+            <rect x="26" y="52" width="12" height="34" rx="6" fill="#BFD4EC" transform="rotate(32 32 69)"/>
+            <rect x="82" y="52" width="12" height="34" rx="6" fill="#BFD4EC" transform="rotate(-32 88 69)"/>
+            <circle cx="60" cy="44" r="25" fill="#F6CFA6"/>
+            <path d="M35 40 Q39 19 60 19 Q81 19 85 40 Q73 32 60 33 Q47 32 35 40 Z" fill="#4A3628"/>
+            <path d="M74 20 q8 -6 10 2 q-6 0 -10 4 Z" fill="#4A3628"/>
+            <path d="M46 46 q4 -3 8 0" stroke="#2A241D" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M66 46 q4 -3 8 0" stroke="#2A241D" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="60" cy="57" rx="4" ry="5" fill="#B4633C"/>
+          </svg>
+        </div>
+        <div class="futon"></div>
+        <h3>また育てよう。<br>前は 21日 までいけた。</h3>
+        <p class="sub">姿は最初に戻ったけど、記録と称号はぜんぶ残ってる。</p>
+        <div class="keepline"><span>✓ あゆみ図鑑</span><span>✓ 最長記録 21日</span><span>✓ 1,840pt</span></div>
+        <div class="cta">
+          <a class="app-btn">明日 7:00 にまた挑戦</a>
+          <span class="bonus-note">3日以内の再開で「おかえりボーナス +15pt」</span>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <p class="step"><b>8</b>途切れた翌朝</p>
+      <h2>パジャマ姿へのリセット</h2>
+      <p class="when">ストリークが途切れた次の起動時に1回だけ表示</p>
+      <ul>
+        <li><strong>責める画面は出さない</strong><span>パジャマ姿で仕切り直しのストレッチ+「また育てよう。前は21日までいけた。」— 悔しさは姿の変化だけに語らせる。</span></li>
+        <li><strong>失うのは「現在の姿」だけ</strong><span>図鑑・最長記録・ポイントの保持を画面内で明示し、喪失感を限定する。</span></li>
+        <li><strong>次の行動がすぐ置いてある</strong><span>CTAは「明日7:00にまた挑戦」一択+おかえりボーナスの予告。</span></li>
+        <li><strong>おやすみ(2週に1回)はこの画面を防ぐ正規手段</strong><span>スキップ利用日は姿も🔥も維持される。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    WakeUp 画面モック v1 — 設計書 §3(画面設計)に対応。カメラの撮影プレビュー、友達管理、設定、通報フローは v2 モックで扱う予定。
+  </footer>
+</div>
+
+</body>
+</html>
