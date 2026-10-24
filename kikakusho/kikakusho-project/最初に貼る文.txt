@@ -1,0 +1,8 @@
+このフォルダは、動画企画書の作業用です。CLAUDE.md を読んで、次を順番に確認して、結果を短く報告してください。
+
+1. スキルの一覧に client-intake、kikakusho-builder、progress-sheet-share が出るか。出ないときは、.claude/skills にある同名のものを使う。
+2. node、ffmpeg、soffice(LibreOffice)が使えるか。tool で npm install を実行して、tool/example.json で企画書が作れるか。足りないものがあれば、入れ方を教えて。
+3. Googleドライブとスプレッドシートのコネクタが使えるか。
+4. clients/_template をコピーして clients/新日本リプラス を作る。inbox.md の場所を教えて、私が貼るのを待つ。
+
+私が inbox.md に資料を貼って「貼った」と言ったら、client-intake から始めてください。
